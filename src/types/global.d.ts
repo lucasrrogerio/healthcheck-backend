@@ -14,15 +14,11 @@ interface Endpoint {
     url: string;
 }
 
-interface ApplicationHealthInfo {
-    name: string;
-    services: EndpointHealthInfo[];
-}
-
-interface EndpointHealthInfo {
-    name: string;
-    message: string;
-    status: HealthStatus;
+interface Log {
+    timestamp: string;
+    service: string;
+    endpoint: string;
+    status: string;
 }
 
 type HealthStatus = 'UP' | 'DOWN';

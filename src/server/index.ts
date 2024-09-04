@@ -1,7 +1,7 @@
 import express, { Express } from "express";
 import cors from "cors";
 
-import { router as logRouter } from "../route/log"
+import { router as logRouter } from "../route/applicationStatus"
 
 const server: Express = express();
 server.use(cors());
