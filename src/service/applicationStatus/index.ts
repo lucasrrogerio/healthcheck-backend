@@ -44,22 +44,29 @@ const updateAllRecent = async () => {
 
 const updateEndpointStatus = async (applicationName: string, url: string, endpoint: Endpoint) => {
     let statusMessage: string;
+    let statusCode: string | undefined;
 
     const endpointName = endpoint.name;
     const endpointUrl = url.concat(`/${endpoint.url}`);
 
     try {
         const response = await axios.get(endpointUrl, { httpsAgent });
-        statusMessage = `(${response.status}) ${response.statusText}`;
+
+        statusMessage = response.statusText;
+        statusCode = String(response.status);
+
     } catch (error: unknown) {
         if (error instanceof AxiosError) {
-            statusMessage = error.response ? `(${error.response.status}) ${error.response.statusText}` : error.message;
+            statusMessage = error.response ? error.response.statusText : error.message;
+            statusCode = error.response ? String(error.response.status) : error.code;
+
         } else {
             statusMessage = "Erro desconhecido.";
+            
         }
     }
 
-    await applicationStatusDatabase.save(applicationName, endpointName, statusMessage);
+    await applicationStatusDatabase.save(applicationName, endpointName, statusMessage, statusCode);
 
 };
 

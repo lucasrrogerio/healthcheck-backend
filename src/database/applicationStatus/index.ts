@@ -4,7 +4,7 @@ const sqlite: sqlite3.sqlite3 = sqlite3.verbose();
 const db: Database = new sqlite.Database('status_logs.db');
 
 db.serialize(() => {
-    db.run("CREATE TABLE IF NOT EXISTS logs (timestamp TEXT, application TEXT, endpoint TEXT, status TEXT)");
+    db.run("CREATE TABLE IF NOT EXISTS logs (timestamp TEXT, application TEXT, endpoint TEXT, status_code TEXT, status_message TEXT)");
 });
 
 const validatePagination = (page?: number, limit?: number) => {
@@ -38,18 +38,18 @@ const executeSelectQuery = (baseQuery: string, conditions: string, params: strin
     });
 }
 
-const save = async (service: string, endpoint: string, status: string) => {
+const save = async (application: string, endpoint: string, status_message: string, status_code?: string) => {
     return new Promise<void>((resolve, reject) => {
         const timestamp = new Date().toISOString();
-        const query = "INSERT INTO logs (timestamp, service, endpoint, status) VALUES (?, ?, ?, ?)";
-        const params = [timestamp, service, endpoint, status];
+        const query = "INSERT INTO logs (timestamp, application, endpoint, status_code, status_message) VALUES (?, ?, ?, ?, ?)";
+        const params = [timestamp, application, endpoint, status_code, status_message];
 
         db.run(query, params, (err) => {
             if (err) {
                 console.error(err.message);
                 reject(err);
             } else {
-                console.log(`Status do serviço ${service}:${endpoint} registrado como ${status} em ${timestamp}`);
+                console.log(`Status da Aplicação ${application}:${endpoint} registrado com statusCode ${status_code} e mensagem ${status_message} em ${timestamp}`);
                 resolve();
             }
         });
@@ -58,13 +58,13 @@ const save = async (service: string, endpoint: string, status: string) => {
 
 const getAllRecent = async () => {
     const rows: Log[] = await executeSelectQuery(`
-                SELECT l1.timestamp, l1.service, l1.endpoint, l1.status
+                SELECT l1.timestamp, l1.application, l1.endpoint, l1.status_code, l1.status_message
                 FROM logs l1
                 INNER JOIN (
-                    SELECT service, endpoint, MAX(timestamp) AS max_timestamp
+                    SELECT application, endpoint, MAX(timestamp) AS max_timestamp
                     FROM logs
-                    GROUP BY service, endpoint
-                ) l2 ON l1.service = l2.service AND l1.endpoint = l2.endpoint AND l1.timestamp = l2.max_timestamp
+                    GROUP BY application, endpoint
+                ) l2 ON l1.application = l2.application AND l1.endpoint = l2.endpoint AND l1.timestamp = l2.max_timestamp
                  `, "", [], 0, 0);
     return rows;
 }
@@ -74,8 +74,8 @@ const getAll = async (page?: number, limit?: number) => {
     return rows;
 }
 
-const get = async (service: string, page?: number, limit?: number) => {
-    const rows: Log[] = await executeSelectQuery("SELECT * FROM logs", "WHERE service = ?", [service], page, limit);
+const get = async (application: string, page?: number, limit?: number) => {
+    const rows: Log[] = await executeSelectQuery("SELECT * FROM logs", "WHERE application = ?", [application], page, limit);
     return rows;
 }
 
