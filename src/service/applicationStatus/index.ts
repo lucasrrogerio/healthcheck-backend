@@ -6,29 +6,34 @@ import { applicationStatusDatabase } from "../../database/applicationStatus";
 
 const httpsAgent: https.Agent = new https.Agent({ rejectUnauthorized: false });
 
-const getAllRecent = async () => {
+const getAllRecent = async (): Promise<Log[]> => {
     await updateAllRecent();
 
     const recentAppStatus = await applicationStatusDatabase.getAllRecent();
-    return recentAppStatus;
+    return updateLogWithStatus(recentAppStatus);
 }
 
-const getAll = async (page?: number, limit?: number) => {
+const getAll = async (page?: number, limit?: number): Promise<Log[]> => {
     const appStatus = await applicationStatusDatabase.getAll(page, limit);
-    return appStatus;
+    return updateLogWithStatus(appStatus);
 }
 
-const getAllCount = async () => {
-    const appStatusCount = await getAll();
+const getAllCount = async (): Promise<number> => {
+    const appStatusCount = await applicationStatusDatabase.getAll();
     return appStatusCount.length;
 }
 
-const get = async (service: string, page?: number, limit?: number) => {
+const get = async (service: string, page?: number, limit?: number): Promise<Log[]> => {
     const appStatus = await applicationStatusDatabase.get(service, page, limit);
-    return appStatus;
+    return updateLogWithStatus(appStatus);
 }
 
-const updateAllRecent = async () => {
+const getCount = async (service: string): Promise<number> => {
+    const appStatus = await applicationStatusDatabase.get(service);
+    return appStatus.length;
+}
+
+const updateAllRecent = async (): Promise<void> => {
     await Promise.all(applications.map(async (application: Application) => {
 
         await Promise.all(application.service.endpoints.map(async (endpoint: Endpoint) => {
@@ -37,12 +42,10 @@ const updateAllRecent = async () => {
             await updateEndpointStatus(application.name, url, endpoint);
 
         }));
-
     }));
-
 }
 
-const updateEndpointStatus = async (applicationName: string, url: string, endpoint: Endpoint) => {
+const updateEndpointStatus = async (applicationName: string, url: string, endpoint: Endpoint): Promise<void> => {
     let statusMessage: string;
     let statusCode: string | undefined;
 
@@ -58,16 +61,25 @@ const updateEndpointStatus = async (applicationName: string, url: string, endpoi
     } catch (error: unknown) {
         if (error instanceof AxiosError) {
             statusMessage = error.response ? error.response.statusText : error.message;
-            statusCode = error.response ? String(error.response.status) : error.code;
+            statusCode = error.response ? String(error.response.status) : undefined;
 
         } else {
             statusMessage = "Erro desconhecido.";
-            
+
         }
     }
 
-    await applicationStatusDatabase.save(applicationName, endpointName, statusMessage, statusCode);
+    const appAvailable = statusCode ? true : false;
+
+    await applicationStatusDatabase.save(applicationName, endpointName, statusMessage, appAvailable, statusCode);
 
 };
 
-export const applicationStatusService = { getAllRecent, getAll, getAllCount, get };
+const updateLogWithStatus = (logs: Log[]): Log[] => {
+    logs.forEach(log => {
+        log.application_available = log.status_code != undefined;
+    })
+    return logs;
+}
+
+export const applicationStatusService = { getAllRecent, getAll, getAllCount, get, getCount };

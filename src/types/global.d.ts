@@ -16,9 +16,9 @@ interface Endpoint {
 
 interface Log {
     timestamp: string;
-    service: string;
+    application: string;
     endpoint: string;
-    status: string;
+    status_code: string;
+    status_message: string;
+    application_available: integer | boolean;
 }
-
-type HealthStatus = 'UP' | 'DOWN';

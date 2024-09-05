@@ -4,7 +4,12 @@ import { StatusCodes } from "http-status-codes"
 
 import { applicationStatusService } from "../../service/applicationStatus";
 
-const getPaginationQueryParams = (req: Request) => {
+interface PaginationParams {
+    page: number | undefined;
+    limit: number | undefined;
+}
+
+const getPaginationQueryParams = (req: Request): PaginationParams => {
     const { page, limit } = req.query;
 
     const pageNumber: number = Number(page);
@@ -16,12 +21,12 @@ const getPaginationQueryParams = (req: Request) => {
     };
 }
 
-const errorResponse = async (err: unknown, res: Response) => {
+const errorResponse = async (err: unknown, res: Response): Promise<void> => {
     const errorMessage = (err instanceof Error) ? err.message : 'Erro desconhecido.';
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: errorMessage });
 }
 
-const getAllRecent = async (req: Request, res: Response) => {
+const getAllRecent = async (req: Request, res: Response): Promise<void> => {
     try {
         const applicationStatuses: Log[] = await applicationStatusService.getAllRecent();
         res.status(StatusCodes.OK).json(applicationStatuses);
@@ -30,7 +35,7 @@ const getAllRecent = async (req: Request, res: Response) => {
     }
 }
 
-const getAll = async (req: Request, res: Response) => {
+const getAll = async (req: Request, res: Response): Promise<void> => {
     const { page, limit } = getPaginationQueryParams(req);
 
     try {
@@ -41,7 +46,7 @@ const getAll = async (req: Request, res: Response) => {
     }
 }
 
-const getAllCount = async (req: Request, res: Response) => {
+const getAllCount = async (req: Request, res: Response): Promise<void> => {
     try {
         const applicationStatusesCount: number = await applicationStatusService.getAllCount();
         res.status(StatusCodes.OK).json(applicationStatusesCount);
@@ -50,7 +55,8 @@ const getAllCount = async (req: Request, res: Response) => {
     }
 
 }
-const get = async (req: Request, res: Response) => {
+
+const get = async (req: Request, res: Response): Promise<void> => {
     const { page, limit } = getPaginationQueryParams(req);
     const { service } = req.params;
 
@@ -62,9 +68,21 @@ const get = async (req: Request, res: Response) => {
     }
 }
 
+const getCount = async (req: Request, res: Response): Promise<void> => {
+    const { service } = req.params;
+
+    try {
+        const applicationStatusesCount: number = await applicationStatusService.getCount(service);
+        res.status(StatusCodes.OK).json(applicationStatusesCount);
+    } catch (err: unknown) {
+        errorResponse(err, res);
+    }
+}
+
 export const applicationStatusController = {
     getAllRecent,
     getAll,
     getAllCount,
-    get
+    get,
+    getCount,
 }
