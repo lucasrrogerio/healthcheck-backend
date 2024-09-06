@@ -2,34 +2,34 @@ import axios, { AxiosError } from "axios";
 import https from "https";
 
 import { applications } from "../../data/applications";
-import { applicationStatusModel } from "../../model/applicationStatus";
+import { applicationStatusRepository } from "../../repository/applicationStatus";
 
 const httpsAgent: https.Agent = new https.Agent({ rejectUnauthorized: false });
 
 const getAllAppStatusRecent = async (): Promise<Log[]> => {
     await updateAllAppStatusRecent();
 
-    const recentAppStatus = await applicationStatusModel.getAllAppStatusRecent();
+    const recentAppStatus = await applicationStatusRepository.getAllAppStatusRecent();
     return updateLogWithStatus(recentAppStatus);
 }
 
 const getAllAppStatus = async (page?: number, limit?: number): Promise<Log[]> => {
-    const appStatus = await applicationStatusModel.getAllAppStatus(page, limit);
+    const appStatus = await applicationStatusRepository.getAllAppStatus(page, limit);
     return updateLogWithStatus(appStatus);
 }
 
 const getAllAppStatusCount = async (): Promise<number> => {
-    const appStatusCount = await applicationStatusModel.getAllAppStatus();
+    const appStatusCount = await applicationStatusRepository.getAllAppStatus();
     return appStatusCount.length;
 }
 
 const getAppStatusByName = async (application: string, page?: number, limit?: number): Promise<Log[]> => {
-    const appStatus = await applicationStatusModel.getAppStatus(application, page, limit);
+    const appStatus = await applicationStatusRepository.getAppStatusByName(application, page, limit);
     return updateLogWithStatus(appStatus);
 }
 
 const getAppStatusByNameCount = async (application: string): Promise<number> => {
-    const appStatus = await applicationStatusModel.getAppStatus(application);
+    const appStatus = await applicationStatusRepository.getAppStatusByName(application);
     return appStatus.length;
 }
 
@@ -71,7 +71,7 @@ const updateEndpointStatus = async (applicationName: string, url: string, endpoi
 
     const appAvailable = statusCode ? true : false;
 
-    await applicationStatusModel.saveAppStatus(applicationName, endpointName, statusMessage, appAvailable, statusCode);
+    await applicationStatusRepository.saveAppStatus(applicationName, endpointName, statusMessage, appAvailable, statusCode);
 
 };
 
