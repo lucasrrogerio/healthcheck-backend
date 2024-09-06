@@ -2,34 +2,34 @@ import axios, { AxiosError } from "axios";
 import https from "https";
 
 import { applications } from "../../data/applications";
-import { applicationStatusDatabase } from "../../database/applicationStatus";
+import { applicationStatusModel } from "../../model/applicationStatus";
 
 const httpsAgent: https.Agent = new https.Agent({ rejectUnauthorized: false });
 
 const getAllRecent = async (): Promise<Log[]> => {
     await updateAllRecent();
 
-    const recentAppStatus = await applicationStatusDatabase.getAllRecent();
+    const recentAppStatus = await applicationStatusModel.getAllRecent();
     return updateLogWithStatus(recentAppStatus);
 }
 
 const getAll = async (page?: number, limit?: number): Promise<Log[]> => {
-    const appStatus = await applicationStatusDatabase.getAll(page, limit);
+    const appStatus = await applicationStatusModel.getAll(page, limit);
     return updateLogWithStatus(appStatus);
 }
 
 const getAllCount = async (): Promise<number> => {
-    const appStatusCount = await applicationStatusDatabase.getAll();
+    const appStatusCount = await applicationStatusModel.getAll();
     return appStatusCount.length;
 }
 
 const get = async (service: string, page?: number, limit?: number): Promise<Log[]> => {
-    const appStatus = await applicationStatusDatabase.get(service, page, limit);
+    const appStatus = await applicationStatusModel.get(service, page, limit);
     return updateLogWithStatus(appStatus);
 }
 
 const getCount = async (service: string): Promise<number> => {
-    const appStatus = await applicationStatusDatabase.get(service);
+    const appStatus = await applicationStatusModel.get(service);
     return appStatus.length;
 }
 
@@ -71,7 +71,7 @@ const updateEndpointStatus = async (applicationName: string, url: string, endpoi
 
     const appAvailable = statusCode ? true : false;
 
-    await applicationStatusDatabase.save(applicationName, endpointName, statusMessage, appAvailable, statusCode);
+    await applicationStatusModel.save(applicationName, endpointName, statusMessage, appAvailable, statusCode);
 
 };
 

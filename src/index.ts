@@ -1,7 +1,10 @@
-import { server } from './server'
+import express, { Express } from "express";
+import cors from "cors";
 
-const PORT = process.env.PORT || 3001;
+import { router as logRouter } from "./route/applicationStatus"
 
-server.listen(PORT, () => {
-    console.log(`Server executando na porta ${PORT}`);
-});
+const app: Express = express();
+app.use(cors());
+app.use(logRouter);
+
+export { app };
