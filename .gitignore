@@ -1,5 +1,6 @@
 node_modules/
 out/
 .vscode/
-status_logs.db
+
+**.db
 src/data/applications.ts

@@ -28,7 +28,7 @@ const errorResponse = async (err: unknown, res: Response): Promise<void> => {
 
 const getAllRecent = async (req: Request, res: Response): Promise<void> => {
     try {
-        const applicationStatuses: Log[] = await applicationStatusService.getAllRecent();
+        const applicationStatuses: Log[] = await applicationStatusService.getAllAppStatusRecent();
         res.status(StatusCodes.OK).json(applicationStatuses);
     } catch (err: unknown) {
         errorResponse(err, res);
@@ -39,7 +39,7 @@ const getAll = async (req: Request, res: Response): Promise<void> => {
     const { page, limit } = getPaginationQueryParams(req);
 
     try {
-        const applicationStatuses: Log[] = await applicationStatusService.getAll(page, limit);
+        const applicationStatuses: Log[] = await applicationStatusService.getAllAppStatus(page, limit);
         res.status(StatusCodes.OK).json(applicationStatuses);
     } catch (err: unknown) {
         errorResponse(err, res);
@@ -48,7 +48,7 @@ const getAll = async (req: Request, res: Response): Promise<void> => {
 
 const getAllCount = async (req: Request, res: Response): Promise<void> => {
     try {
-        const applicationStatusesCount: number = await applicationStatusService.getAllCount();
+        const applicationStatusesCount: number = await applicationStatusService.getAllAppStatusCount();
         res.status(StatusCodes.OK).json(applicationStatusesCount);
     } catch (err: unknown) {
         errorResponse(err, res);
@@ -61,7 +61,7 @@ const get = async (req: Request, res: Response): Promise<void> => {
     const { service } = req.params;
 
     try {
-        const applicationStatuses: Log[] = await applicationStatusService.get(service, page, limit);
+        const applicationStatuses: Log[] = await applicationStatusService.getAppStatusByName(service, page, limit);
         res.status(StatusCodes.OK).json(applicationStatuses);
     } catch (err: unknown) {
         errorResponse(err, res);
@@ -72,7 +72,7 @@ const getCount = async (req: Request, res: Response): Promise<void> => {
     const { service } = req.params;
 
     try {
-        const applicationStatusesCount: number = await applicationStatusService.getCount(service);
+        const applicationStatusesCount: number = await applicationStatusService.getAppStatusByNameCount(service);
         res.status(StatusCodes.OK).json(applicationStatusesCount);
     } catch (err: unknown) {
         errorResponse(err, res);

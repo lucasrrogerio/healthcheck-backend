@@ -6,34 +6,34 @@ import { applicationStatusModel } from "../../model/applicationStatus";
 
 const httpsAgent: https.Agent = new https.Agent({ rejectUnauthorized: false });
 
-const getAllRecent = async (): Promise<Log[]> => {
-    await updateAllRecent();
+const getAllAppStatusRecent = async (): Promise<Log[]> => {
+    await updateAllAppStatusRecent();
 
-    const recentAppStatus = await applicationStatusModel.getAllRecent();
+    const recentAppStatus = await applicationStatusModel.getAllAppStatusRecent();
     return updateLogWithStatus(recentAppStatus);
 }
 
-const getAll = async (page?: number, limit?: number): Promise<Log[]> => {
-    const appStatus = await applicationStatusModel.getAll(page, limit);
+const getAllAppStatus = async (page?: number, limit?: number): Promise<Log[]> => {
+    const appStatus = await applicationStatusModel.getAllAppStatus(page, limit);
     return updateLogWithStatus(appStatus);
 }
 
-const getAllCount = async (): Promise<number> => {
-    const appStatusCount = await applicationStatusModel.getAll();
+const getAllAppStatusCount = async (): Promise<number> => {
+    const appStatusCount = await applicationStatusModel.getAllAppStatus();
     return appStatusCount.length;
 }
 
-const get = async (service: string, page?: number, limit?: number): Promise<Log[]> => {
-    const appStatus = await applicationStatusModel.get(service, page, limit);
+const getAppStatusByName = async (application: string, page?: number, limit?: number): Promise<Log[]> => {
+    const appStatus = await applicationStatusModel.getAppStatus(application, page, limit);
     return updateLogWithStatus(appStatus);
 }
 
-const getCount = async (service: string): Promise<number> => {
-    const appStatus = await applicationStatusModel.get(service);
+const getAppStatusByNameCount = async (application: string): Promise<number> => {
+    const appStatus = await applicationStatusModel.getAppStatus(application);
     return appStatus.length;
 }
 
-const updateAllRecent = async (): Promise<void> => {
+const updateAllAppStatusRecent = async (): Promise<void> => {
     await Promise.all(applications.map(async (application: Application) => {
 
         await Promise.all(application.service.endpoints.map(async (endpoint: Endpoint) => {
@@ -71,7 +71,7 @@ const updateEndpointStatus = async (applicationName: string, url: string, endpoi
 
     const appAvailable = statusCode ? true : false;
 
-    await applicationStatusModel.save(applicationName, endpointName, statusMessage, appAvailable, statusCode);
+    await applicationStatusModel.saveAppStatus(applicationName, endpointName, statusMessage, appAvailable, statusCode);
 
 };
 
@@ -82,4 +82,4 @@ const updateLogWithStatus = (logs: Log[]): Log[] => {
     return logs;
 }
 
-export const applicationStatusService = { getAllRecent, getAll, getAllCount, get, getCount };
+export const applicationStatusService = { getAllAppStatusRecent, getAllAppStatus, getAllAppStatusCount, getAppStatusByName, getAppStatusByNameCount };

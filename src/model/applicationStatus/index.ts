@@ -42,7 +42,7 @@ const executeSelectQuery = (baseQuery: string, conditions: string, params: strin
     });
 }
 
-const save = (application: string, endpoint: string, status_message: string, application_available: boolean, status_code?: string): Promise<void> => {
+const saveAppStatus = (application: string, endpoint: string, status_message: string, application_available: boolean, status_code?: string): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
         const timestamp: string = new Date().toISOString();
         const query: string = "INSERT INTO logs (timestamp, application, endpoint, status_code, status_message, application_available) VALUES (?, ?, ?, ?, ?, ?)";
@@ -59,7 +59,7 @@ const save = (application: string, endpoint: string, status_message: string, app
     });
 }
 
-const getAllRecent = async (): Promise<Log[]> => {
+const getAllAppStatusRecent = async (): Promise<Log[]> => {
     const rows: Log[] = await executeSelectQuery(`
                 SELECT l1.timestamp, l1.application, l1.endpoint, l1.status_code, l1.status_message, l1.application_available
                 FROM logs l1
@@ -72,15 +72,14 @@ const getAllRecent = async (): Promise<Log[]> => {
     return rows;
 }
 
-const getAll = async (page?: number, limit?: number): Promise<Log[]> => {
+const getAllAppStatus = async (page?: number, limit?: number): Promise<Log[]> => {
     const rows: Log[] = await executeSelectQuery("SELECT * FROM logs", "", [], page, limit);
     return rows;
 }
 
-const get = async (application: string, page?: number, limit?: number): Promise<Log[]> => {
+const getAppStatus = async (application: string, page?: number, limit?: number): Promise<Log[]> => {
     const rows: Log[] = await executeSelectQuery("SELECT * FROM logs", "WHERE application = ?", [application], page, limit);
     return rows;
 }
 
-
-export const applicationStatusModel = { getAllRecent, save, getAll, get };
+export const applicationStatusModel = { getAllAppStatusRecent, saveAppStatus, getAllAppStatus, getAppStatus };
