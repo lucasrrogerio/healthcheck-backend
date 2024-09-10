@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
-
 import { StatusCodes } from "http-status-codes"
+import { Readable } from "stream";
 
 import { applicationStatusService } from "../../service/applicationStatus";
 
@@ -21,12 +21,27 @@ const getPaginationQueryParams = (req: Request): PaginationParams => {
     };
 }
 
+const exportLogDataStream = (logs: Log[], res: Response, application?: string,) => {
+    const readable = new Readable({
+        read() {
+            this.push(JSON.stringify(logs, null, 2));
+            this.push(null);
+        }
+    });
+
+    const filename = application ? `${application}_full_logs` : 'full_logs';
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}.json"`);
+    res.setHeader('Content-Type', 'application/json');
+    readable.pipe(res);
+};
+
 const errorResponse = async (err: unknown, res: Response): Promise<void> => {
     const errorMessage = (err instanceof Error) ? err.message : 'Erro desconhecido.';
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: errorMessage });
 }
 
-const getAllRecent = async (req: Request, res: Response): Promise<void> => {
+const getAllAppStatusRecent = async (req: Request, res: Response): Promise<void> => {
     try {
         const applicationStatuses: Log[] = await applicationStatusService.getAllAppStatusRecent();
         res.status(StatusCodes.OK).json(applicationStatuses);
@@ -35,7 +50,7 @@ const getAllRecent = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
-const getAll = async (req: Request, res: Response): Promise<void> => {
+const getAllAppStatus = async (req: Request, res: Response): Promise<void> => {
     const { page, limit } = getPaginationQueryParams(req);
 
     try {
@@ -46,7 +61,7 @@ const getAll = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
-const getAllCount = async (req: Request, res: Response): Promise<void> => {
+const getAllAppStatusCount = async (req: Request, res: Response): Promise<void> => {
     try {
         const applicationStatusesCount: number = await applicationStatusService.getAllAppStatusCount();
         res.status(StatusCodes.OK).json(applicationStatusesCount);
@@ -56,33 +71,55 @@ const getAllCount = async (req: Request, res: Response): Promise<void> => {
 
 }
 
-const get = async (req: Request, res: Response): Promise<void> => {
+const getAppStatusFromApp = async (req: Request, res: Response): Promise<void> => {
     const { page, limit } = getPaginationQueryParams(req);
-    const { service } = req.params;
+    const { application } = req.params;
 
     try {
-        const applicationStatuses: Log[] = await applicationStatusService.getAppStatusByName(service, page, limit);
+        const applicationStatuses: Log[] = await applicationStatusService.getAppStatusByName(application, page, limit);
         res.status(StatusCodes.OK).json(applicationStatuses);
     } catch (err: unknown) {
         errorResponse(err, res);
     }
 }
 
-const getCount = async (req: Request, res: Response): Promise<void> => {
-    const { service } = req.params;
+const getAppStatusFromAppCount = async (req: Request, res: Response): Promise<void> => {
+    const { application } = req.params;
 
     try {
-        const applicationStatusesCount: number = await applicationStatusService.getAppStatusByNameCount(service);
+        const applicationStatusesCount: number = await applicationStatusService.getAppStatusByNameCount(application);
         res.status(StatusCodes.OK).json(applicationStatusesCount);
     } catch (err: unknown) {
         errorResponse(err, res);
     }
 }
 
+const exportAllLogs = async (req: Request, res: Response) => {
+    try {
+        const applicationStatuses: Log[] = await applicationStatusService.getAllAppStatus();
+        exportLogDataStream(applicationStatuses, res);
+    } catch (err: unknown) {
+        errorResponse(err, res);
+    }
+}
+
+const exportAllLogsFromApp = async (req: Request, res: Response) => {
+    const { application } = req.params;
+
+    try {
+        const applicationStatuses: Log[] = await applicationStatusService.getAppStatusByName(application);
+        exportLogDataStream(applicationStatuses, res, application);
+    } catch (err: unknown) {
+        errorResponse(err, res);
+    }
+}
+
 export const applicationStatusController = {
-    getAllRecent,
-    getAll,
-    getAllCount,
-    get,
-    getCount,
+    getAllAppStatusRecent,
+    getAllAppStatus,
+    getAllAppStatusCount,
+    getAppStatusFromApp,
+    getAppStatusFromAppCount,
+    exportAllLogs,
+    exportAllLogsFromApp
 }

@@ -3,6 +3,6 @@ import { applicationStatusController } from "../../controller/applicationStatus"
 
 const router: Router = Router();
 
-router.get('/', applicationStatusController.getAllRecent);
+router.get('/', applicationStatusController.getAllAppStatusRecent);
 
 export { router };

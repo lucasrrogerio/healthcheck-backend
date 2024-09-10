@@ -3,9 +3,11 @@ import { applicationStatusController } from "../../controller/applicationStatus"
 
 const router: Router = Router();
 
-router.get('/', applicationStatusController.getAll);
-router.get('/count', applicationStatusController.getAllCount);
-router.get('/:service', applicationStatusController.get);
-router.get('/:service/count', applicationStatusController.getCount);
+router.get('/', applicationStatusController.getAllAppStatus);
+router.get('/count', applicationStatusController.getAllAppStatusCount);
+router.get('/export', applicationStatusController.exportAllLogs);
+router.get('/:application', applicationStatusController.getAppStatusFromApp);
+router.get('/:application/count', applicationStatusController.getAppStatusFromAppCount);
+router.get('/:application/export', applicationStatusController.exportAllLogsFromApp);
 
 export { router };
